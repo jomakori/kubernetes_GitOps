@@ -1,0 +1,43 @@
+{{- if and (.Values.kubePrometheusStack) (.Values.kubePrometheusStack.enable) -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: {{ .Values.argoNamespace | default "argocd" }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argoProject | default "default" }}
+  revisionHistoryLimit: 3
+  source:
+    repoURL: "{{ .Values.repoUrl }}"
+    path: services/helm/kube-prometheus-stack
+    targetRevision: "{{ .Values.targetRevision }}"
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: {{ .Values.destinationServer | default "https://kubernetes.default.svc" }}
+    namespace: kube-prometheus-stack
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - Replace=true
+      - ServerSideApply=true
+    retry:
+      limit: 1
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 1m
+  ignoreDifferences:
+    - kind: DaemonSet
+      group: apps
+      name: kube-prometheus-stack-prometheus-node-exporter
+      namespace: kube-prometheus-stack
+      jsonPointers:
+      - /spec/template/spec/containers/0/resources
+{{- end -}}

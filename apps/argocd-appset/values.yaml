@@ -1,0 +1,24 @@
+# Repo Details - passed via Terraform (DevOps repo)
+repoUrl: ""
+path: ""
+targetRevision: ""
+
+# Enable/Disable Apps + their environments
+demoapp1:
+  enabled: true
+  environment:
+    staging:
+      namespace: demoapp1-staging
+      # access to Doppler secrets - passed via Terraform (DevOps repo)
+      dopplerToken: ""
+    production:
+      namespace: demoapp1-prod
+      # access to Doppler secrets - passed via Terraform (DevOps repo)
+      dopplerToken: ""
+demoapp2:
+  enabled: true
+  environment:
+    production:
+      namespace: demoapp2
+      # access to Doppler secrets - passed via Terraform (DevOps repo)
+      dopplerToken: ""

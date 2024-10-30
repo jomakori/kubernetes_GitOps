@@ -1,0 +1,7 @@
+apiVersion: v2
+name: demoapp1
+description: A Helm chart for demoapp1
+version: 0.1.0
+appVersion: "1.0"
+maintainers:
+  - name: commerce-team

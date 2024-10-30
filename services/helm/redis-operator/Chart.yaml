@@ -1,0 +1,17 @@
+apiVersion: v2
+name: redis-operator
+description: A Helm chart for deploying redis-cluster using a Redis operator
+
+# Application charts are a collection of templates that can be packaged into versioned archives
+# to be deployed.
+type: application
+
+# App Version
+appVersion: "7.4.1"
+# Chart version
+version: 11.0.6
+
+dependencies:
+  - name: redis-cluster
+    version: 11.0.6
+    repository: https://charts.bitnami.com/bitnami

@@ -1,0 +1,59 @@
+# Global Values - passed in via DevOps repo (Terraform)
+repoUrl: ""
+path: ""
+targetRevision: ""
+region: ""
+account: ""
+clusterName: ""
+clusterEndpoint: ""
+
+# Service Values - passed in via DevOps repo (Terraform)
+## AWS Load Balancer Controller Values
+awsLoadBalancerController:
+  enable: true
+  createNamespace: true
+  serviceAccountName:
+
+# Datadog Operator
+datadogOperator:
+  enable: true
+
+# DB Tunnel
+dbTunnel:
+  enable: true
+  environment:
+    production:
+      endpoint:
+    staging:
+      endpoint:
+
+## External Secrets Operator
+externalSecrets:
+  enable: true
+  serviceAccountName:
+
+## Karpenter Values
+karpenter:
+  enable: true
+  createNamespace: true
+  serviceAccountName:
+  interruptionQueueName:
+
+## kubecost Values
+kubecost:
+  enable: true
+
+## Kube Prometheus Stack
+kubePrometheusStack:
+  enable: true
+
+## Metrics Server Values
+metricsServer:
+  enable: true
+
+## Redis Operator Values
+redisOperator:
+  enable: true
+  environment:
+    - production
+    - staging

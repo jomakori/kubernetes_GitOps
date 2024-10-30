@@ -1,0 +1,36 @@
+redis-cluster:
+  # ┌─────────────────────────────────────────────────────────────────────────────┐
+  # │   Private access cluster - no need                                          │
+  # └─────────────────────────────────────────────────────────────────────────────┘
+  usePassword: false
+  # ┌─────────────────────────────────────────────────────────────────────────────┐
+  # │   Set Cluster size                                                          │
+  # |   Note: Sets the total nodes - masters and their replicas.                  |
+  # |         Each master has 1 replica - Total Nodes = master nodes * replicas   |                                     |
+  # |         There should be a minimum of 3 nodes set or cluster will fail       |
+  # └─────────────────────────────────────────────────────────────────────────────┘
+  cluster:
+    nodes: 6
+  redis:
+    # ┌─────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    # │   Set Redis cluster resource needs                                                                  │
+    # |   Source: https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15   |
+    # └─────────────────────────────────────────────────────────────────────────────────────────────────────┘
+    resources:
+      requests:
+        cpu: 512m
+        memory: 1Gi
+  # ┌─────────────────────────────────────────────────────────────────────────────┐
+  # │   Use Karpenter scalable nodes                                              │
+  # └─────────────────────────────────────────────────────────────────────────────┘
+    nodeSelector:
+      intent: apps
+  updateJob:
+    nodeSelector:
+      intent: apps
+  # ┌─────────────────────────────────────────────────────────────────────────────┐
+  # │   Set storage                                                               │
+  # └─────────────────────────────────────────────────────────────────────────────┘
+  persistence:
+    storageClass: gp2
+    size: 120Gi

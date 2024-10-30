@@ -1,0 +1,41 @@
+{{- if and (.Values.redisOperator) (.Values.redisOperator.enable) -}}
+{{- range .Values.redisOperator.environment }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: redis-operator-{{ . }}
+  namespace: {{ $.Values.argoNamespace | default "argocd" }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ $.Values.argoProject | default "default" }}
+  revisionHistoryLimit: 3
+  source:
+    repoURL: "{{ $.Values.repoUrl }}"
+    path: services/helm/redis-operator
+    targetRevision: "{{ $.Values.targetRevision }}"
+    helm:
+      valueFiles:
+        - values.yaml
+      parameters:
+        - name: redis-cluster.password
+          value: "{{ $.Values.redisOperator.pw }}"
+  destination:
+    server: {{ $.Values.destinationServer | default "https://kubernetes.default.svc" }}
+    namespace: redis-operator-{{ . }}
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+      - Replace=true
+      - ServerSideApply=true
+    retry:
+      limit: 1
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 1m
+{{- end }}
+{{- end -}}

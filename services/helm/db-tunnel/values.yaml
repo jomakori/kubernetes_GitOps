@@ -1,0 +1,5 @@
+socat-tunneller:
+  tunnel:
+    host:
+    port: 5432
+  nameOverride: db-tunnel

@@ -1,0 +1,21 @@
+apiVersion: v2
+name: opencost
+description: A Helm chart for OpenCost (open-source KubeCost)
+
+# Application charts are a collection of templates that can be packaged into versioned archives
+# to be deployed.
+type: application
+
+# The chart version
+version: 1.39.0
+
+# Application version
+appVersion: 1.110.0
+
+maintainers:
+  - name: commerce-team
+
+dependencies:
+  - name: opencost
+    version: 1.39.0
+    repository: https://opencost.github.io/opencost-helm-chart

@@ -1,0 +1,7 @@
+external-secrets:
+  # -- If set, install and upgrade CRDs through helm chart.
+  installCRDs: true
+  replicaCount: 2
+  serviceAccount:
+    create: false
+    name:

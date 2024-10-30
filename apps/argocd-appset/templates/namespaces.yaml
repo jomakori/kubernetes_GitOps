@@ -1,0 +1,17 @@
+# Create envs/namespaces for A
+{{- range $env := .Values.demoapp1.environment }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: {{ $env.namespace }}
+{{- end }}
+
+# Create namespaces for demoapp2
+{{- range $env := .Values.demoapp2.environment }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: {{ $env.namespace }}
+{{- end }}

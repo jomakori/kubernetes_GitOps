@@ -1,0 +1,54 @@
+{{- if and (.Values.awsLoadBalancerController) (.Values.awsLoadBalancerController.enable) -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aws-load-balancer-controller
+  namespace: {{ .Values.argoNamespace | default "argocd" }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: {{ .Values.argoProject | default "default" }}
+  revisionHistoryLimit: 3
+  source:
+    repoURL: "{{ .Values.repoUrl }}"
+    path: services/helm/aws-load-balancer-controller
+    targetRevision: "{{ .Values.targetRevision }}"
+    helm:
+      valueFiles:
+        - values.yaml
+      parameters:
+      - name: aws-load-balancer-controller.clusterName
+        value: "{{ .Values.clusterName }}"
+      - name: aws-load-balancer-controller.region
+        value: "{{ .Values.region }}"
+      - name: aws-load-balancer-controller.serviceAccount.name
+        value: "{{ .Values.awsLoadBalancerController.serviceAccountName }}"
+  destination:
+    server: {{ .Values.destinationServer | default "https://kubernetes.default.svc" }}
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace={{ .Values.awsLoadBalancerController.createNamespace }}
+      - Replace=true
+      - ServerSideApply=true
+    retry:
+      limit: 1
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 1m
+  ignoreDifferences:
+    - kind: Secret
+      name: aws-load-balancer-tls
+      jsonPointers: [/data]
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      jqPathExpressions: ['.webhooks[].clientConfig.caBundle']
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      jqPathExpressions: ['.webhooks[].clientConfig.caBundle']
+{{- end -}}

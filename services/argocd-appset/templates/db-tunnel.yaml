@@ -1,0 +1,41 @@
+{{- if and (.Values.dbTunnel) (.Values.dbTunnel.enable) -}}
+{{- range $env, $details := .Values.dbTunnel.environment }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: db-tunnel-{{ $env }}
+  namespace: {{ $.Values.argoNamespace | default "argocd" }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ $.Values.argoProject | default "default" }}
+  revisionHistoryLimit: 3
+  source:
+    repoURL: "{{ $.Values.repoUrl }}"
+    path: services/helm/db-tunnel
+    targetRevision: "{{ $.Values.targetRevision }}"
+    helm:
+      valueFiles:
+        - values.yaml
+      parameters:
+        - name: socat-tunneller.tunnel.host
+          value: {{ $details.endpoint }}
+  destination:
+    server: {{ $.Values.destinationServer | default "https://kubernetes.default.svc" }}
+    namespace: db-tunnel-{{ $env }}
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+      - Replace=true
+      - ServerSideApply=true
+    retry:
+      limit: 1
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 1m
+{{- end }}
+{{- end -}}

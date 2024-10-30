@@ -1,0 +1,13 @@
+karpenter:
+  hostNetwork: true
+  serviceAccount:
+    create: false
+    name:
+  nodeSelector:
+    kubernetes.io/os: linux
+  settings:
+    featureGates:
+      spotToSpotConsolidation: true
+    clusterName:
+    clusterEndpoint:
+    interruptionQueue:

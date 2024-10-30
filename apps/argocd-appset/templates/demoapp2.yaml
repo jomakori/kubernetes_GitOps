@@ -1,0 +1,47 @@
+{{- if and (.Values.demoapp2) (.Values.demoapp2.enabled) -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: demoapp2
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  revisionHistoryLimit: 3
+  # ignore replicas for hpa scaling
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+  source:
+    repoURL: {{ .Values.repoUrl }}
+    path: apps/helm/demoapp2
+    targetRevision: {{ .Values.targetRevision }}
+    helm:
+      valueFiles:
+        - values.yaml
+      parameters:
+        {{/* Defines namespace name by env */}}
+        - name: environments[0].name
+          value: "{{ .Values.demoapp2.environment.production.namespace }}"
+        {{/* Passes Doppler tokens by env */}}
+        - name: environments[0].dopplerToken
+          value: "{{ .Values.demoapp2.environment.production.dopplerToken }}"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 1
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 1m
+{{- end -}}

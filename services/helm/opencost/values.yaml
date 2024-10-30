@@ -1,0 +1,32 @@
+opencost:
+  networkPolicies:
+    # -- Specifies whether networkpolicies should be created
+    enabled: false
+
+    # -- Internal Prometheus settings related to NetworkPolicies
+    prometheus:
+      # -- Existing Prometheus installation
+      namespace: kube-prometheus-stack
+      port: 9090
+      # -- Labels applied to the Prometheus server pod(s)
+      labels:
+        app.kubernetes.io/name: prometheus
+  opencost:
+    nodeSelector:
+      intent: apps
+    exporter:
+      defaultClusterId: commerce-engine-k8s-cluster
+      extraEnv:
+        EMIT_KSM_V1_METRICS: "false"
+        EMIT_KSM_V1_METRICS_ONLY: "true"
+        LOG_LEVEL: warn
+    prometheus:
+      internal:
+        enabled: true
+        serviceName: kube-prometheus-stack-prometheus
+        namespaceName: kube-prometheus-stack
+    ui:
+      enabled: true
+    metrics:
+      serviceMonitor:
+        enabled: false

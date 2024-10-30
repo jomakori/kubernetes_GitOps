@@ -1,0 +1,7 @@
+metrics-server:
+  replicas: 3
+  # default port - prevents: https://github.com/kubernetes-sigs/metrics-server/issues/1064
+  containerPort: 10250
+  podDisruptionBudget:
+    enabled: true
+    maxUnavailable: 1

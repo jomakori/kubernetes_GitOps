@@ -1,0 +1,60 @@
+##########################
+# CONTROL APP COMPONENTS #
+##########################
+apps: &app_values
+  demoapp1Api:
+    port: 5000
+    replicas: 2
+    resourceRequests:
+      cpu: 2
+      memory: 20Gi
+  demoapp1Flower:
+    port: 5555
+    replicas: 1
+    resourceRequests:
+      cpu: 256m
+      memory: 512Mi
+  demoapp1CeleryBeat:
+    replicas: 2
+    resourceRequests:
+      cpu: 256m
+      memory: 1Gi
+  demoapp1CeleryWorker:
+    replicas: 2
+    resourceRequests:
+      cpu: 256m
+      memory: 14Gi
+  demoapp1CeleryWorkerHeavy:
+    replicas: 2
+    resourceRequests:
+      cpu: 256m
+      memory: 24Gi
+  demoapp1CeleryWorkerHigh:
+    replicas: 2
+    resourceRequests:
+      cpu: 256m
+      memory: 18Gi
+############################
+# CONTROL APP ENVIRONMENTS #
+############################
+environments:
+  # staging name is passed from argocd-appset
+  - name: ""
+    apiHost: "staging-demoapp1.demo.net"
+    flowerHost: "staging-flower.demo.net"
+    rollout: preview
+    dopplerToken: ""
+    image:
+      repository: 123456.dkr.ecr.us-east-2.amazonaws.com/staging-demoapp1
+      tag: "pr-863"
+    <<: *app_values
+  # prod name is passed from argocd-appset
+  - name: ""
+    apiHost: "demoapp1.demo.net"
+    flowerHost: "flower.demo.net"
+    rollout: active
+    dopplerToken: ""
+    image:
+      repository: 123456.dkr.ecr.us-east-2.amazonaws.com/prod-demoapp1
+      tag: "1.172.3"
+    <<: *app_values

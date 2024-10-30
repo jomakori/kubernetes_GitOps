@@ -1,0 +1,34 @@
+{{- if and (.Values.kubecost) (.Values.kubecost.enable) -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kubecost
+  namespace: {{ .Values.argoNamespace | default "argocd" }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argoProject | default "default" }}
+  revisionHistoryLimit: 3
+  source:
+    repoURL: "{{ .Values.repoUrl }}"
+    path: services/helm/kubecost
+    targetRevision: "{{ .Values.targetRevision }}"
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: {{ .Values.destinationServer | default "https://kubernetes.default.svc" }}
+    namespace: kubecost
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+      - Replace=true
+    retry:
+      limit: 1
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 1m
+{{- end -}}

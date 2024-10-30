@@ -1,0 +1,5 @@
+apiVersion: v2
+name: apps
+version: 0.1.0
+appVersion: "1.0"
+description: Root app for managing all workload apps in cluster

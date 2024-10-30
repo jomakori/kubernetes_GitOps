@@ -1,0 +1,23 @@
+##########################
+# CONTROL APP COMPONENTS #
+##########################
+apps: &app_values
+  demoapp2:
+    port: 3000
+    replicas: 2
+    resourceRequests:
+      cpu: 256m
+      memory: 256Mi
+############################
+# CONTROL APP ENVIRONMENTS #
+############################
+environments:
+  # prod name is passed from argocd-appset
+  - name: ""
+    host: "oauth.demo.net"
+    rollout: active
+    dopplerToken: ""
+    image:
+      repository: 123456.dkr.ecr.us-east-2.amazonaws.com/demoapp2
+      tag: "latest"
+    <<: *app_values

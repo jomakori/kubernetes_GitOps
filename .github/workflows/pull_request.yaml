@@ -1,0 +1,63 @@
+name: Lint and Test Charts
+on:
+  workflow_dispatch:  # manual run fallback
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest-large
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Setup Python
+        uses: actions/setup-python@main
+        with:
+          python-version: '3.10'
+          check-latest: true
+
+      - name: Setup Chart-Testing
+        uses: helm/chart-testing-action@main
+
+      - name: Setup Doppler cli
+        uses: dopplerhq/cli-action@master
+
+      - name: Fetch Doppler Secrets
+        id: doppler
+        uses: dopplerhq/secrets-fetch-action@main
+        with:
+          doppler-token: ${{ secrets.DOPPLER_TOKEN }}
+          inject-env-vars: true
+
+      - name: Grab File changes
+        id: changed-files
+        uses: tj-actions/changed-files@main
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@main
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.DEFAULT_AWS_REGION }}
+
+      - name: Configure EKS credentials
+        run: |
+          aws eks update-kubeconfig --name ${{ env.TF_VAR_CLUSTER_NAME }} --region ${{ env.DEFAULT_AWS_REGION }}
+
+      - name: CT - Helm Chart Lint & Test
+        env:
+          changed_files: ${{ steps.changed-files.outputs.all_changed_files }}
+        run: |
+          # Get the current context
+          cluster_context=$(kubectl config current-context 2>/dev/null)
+
+          # Check if the context is empty
+          if [ -z "$cluster_context" ]; then
+              echo "::error::ERROR: Issue setting the kubeconfig for the cluster"
+              exit 1
+          else
+            echo "Testing out changes on: $cluster_context" && ./ct_check.sh "$changed_files"
+          fi

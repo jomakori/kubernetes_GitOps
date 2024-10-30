@@ -1,0 +1,63 @@
+{{- if and (.Values.demoapp1) (.Values.demoapp1.enabled) -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: demoapp1
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    # Sends ArgoCD notifications to Slack channel: e-notify-deployments
+    notifications.argoproj.io/subscribe.on-deployed.slack: e-notify-deployments
+    notifications.argoproj.io/subscribe.on-health-degraded.slack: e-notify-deployments
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: e-notify-deployments
+    notifications.argoproj.io/subscribe.on-sync-running.slack: e-notify-deployments
+    notifications.argoproj.io/subscribe.on-sync-status-unknown.slack: e-notify-deployments
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: e-notify-deployments
+spec:
+  project: default
+  revisionHistoryLimit: 3
+  # ignore replicas for hpa scaling
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+    - group: apps
+      kind: Secret
+      jsonPointers:
+        - /metadata/argocd.argoproj.io/sync-wave
+  source:
+    repoURL: {{ .Values.repoUrl }}
+    path: apps/helm/demoapp1
+    targetRevision: {{ .Values.targetRevision }}
+    helm:
+      valueFiles:
+        - values.yaml
+      parameters:
+        # Defines staging values
+        - name: environments[0].name
+          value: "{{ .Values.demoapp1.environment.staging.namespace }}"
+        - name: environments[0].dopplerToken
+          value: "{{ .Values.demoapp1.environment.staging.dopplerToken }}"
+        # Defines production values
+        - name: environments[1].name
+          value: "{{ .Values.demoapp1.environment.production.namespace }}"
+        - name: environments[1].dopplerToken
+          value: "{{ .Values.demoapp1.environment.production.dopplerToken }}"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 1
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 1m
+{{- end -}}
